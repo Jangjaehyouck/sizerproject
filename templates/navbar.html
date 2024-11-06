@@ -1,0 +1,96 @@
+<!-- 네비게이션바 -->
+<style>
+    /* 마우스 오버 시 손모양으로 변경하는 CSS */
+    .nav-link {
+        cursor: pointer; /* 기본 커서 모양을 손모양으로 설정 */
+    }
+</style>
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+    <div class="container-fluid">
+        {% if user.is_authenticated %}
+        <a class="navbar-brand" href="{% url 'sizer:upload_list' %}">Any Sizer</a>
+        {% else %}
+        <a class="navbar-brand" href="{% url 'common:login' %}">Any Sizer</a>
+        {% endif %}
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent" width="100%">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0" width="100%">
+                <table>
+                    <tr width="100%">
+                        <td>
+                            <li class="nav-item">
+                                {% if user.is_authenticated %}
+                                <a class="nav-link" target="_blank" onclick="nxsizer()">NX Sizer</a>
+                                {% endif %}
+                            </li>
+                        </td>
+                        <td>
+                            {% if user.is_authenticated %}
+                            {% else %}
+                                <a class="nav-link" href="{% url 'common:login' %}">로그인</a>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            <li class="nav-item">
+                                {% if user.is_authenticated %}
+                                    <a class="nav-link" href="{% url 'sizer:upload_list' %}">목록</a>
+                                {% endif %}
+                            </li>
+                        </td>
+                        <td>
+                            <li class="nav-item">
+                                {% if user.is_authenticated %}
+                                    <a class="nav-link" href="{% url 'sizer:index' %}">파일업로드</a>
+                                {% endif %}
+                            </li>
+                        </td>
+                        <td>
+                            <li class="nav-item">
+                                {% if user.is_authenticated %}
+                                    <a class="nav-link" href="{% url 'sizer:tasklist' %}">작업목록</a>
+                                {% endif %}
+                            </li>
+                        </td>
+                        <td>
+                            <li class="nav-item">
+                                {% if user.is_authenticated %}
+                                    <a class="nav-link" href="{% url 'sizer:manual' %}">메뉴얼</a>
+                                {% endif %}
+                            </li>
+                        </td>
+                        <td>
+                            <li class="nav-item">
+                                {% if user.is_authenticated %}
+                                    <a  class="nav-link" href="#" onclick="confirmLogout()">{{ user.username }} (로그아웃)</a>
+                                {% endif %}
+                            </li>
+                        </td>
+                    </tr>
+                </table>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<script>
+    function confirmLogout() {
+        if (confirm("로그아웃하시겠습니까?")) {
+            window.location.href = "{% url 'common:logout' %}";
+        }
+    }
+
+    function nxsizer() {
+        if (confirm("뉴타닉스 사이저 홈페이지로 이동하시겠습니까??")) {
+            window.open("https://sizer.nutanix.com","_blank");
+        }
+    }
+    
+</script>

@@ -1,0 +1,248 @@
+{% extends 'start.html' %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+<style>
+    /* 데이터 가공 전인 경우 빨간색으로 설정 */
+    .data-process-0 {
+        color: red;
+    }
+    /* 데이터 가공 완료인 경우 파란색으로 설정 */
+    .data-process-1 {
+        color: green;
+
+    }
+    /* 데이터 가공 완료인 경우 파란색으로 설정 */
+    .data-process-2 {
+        color: rgb(43, 100, 185);
+
+    }
+    .jutanix-text {
+        font-family: Arial, sans-serif; /* 원하는 글꼴 지정 */
+        font-size: 36px; /* 글자 크기 지정 */
+        font-weight: bold; /* 글자 굵기 지정 */
+        background: linear-gradient(to right, #c1d62e 10%, #1e51a4 90%); /* 그라데이션 배경 색상 */
+        -webkit-background-clip: text; /* 웹킷 브라우저용 텍스트 그라데이션 */
+        -webkit-text-fill-color: transparent; /* 웹킷 브라우저용 텍스트 색상 투명하게 설정 */
+    }
+    .table thead th {
+        text-align: center;
+    }
+    /* 모달 스타일 */
+    .modal {
+        display: none; /* 기본적으로 숨김 */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4); /* 투명도 */
+    }
+    
+    /* 모달 내용 스타일 */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+    
+    /* 닫기 버튼 스타일 */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .download-icon {
+        width: 18px;
+        height: 18px;
+    }
+</style>
+{% if check != '' %}
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitle">Modal Title</h2>
+        <p id="modalMessage">Modal message here.</p>
+    </div>
+</div>
+<script>
+    // 모달 요소 가져오기
+    var modal = document.getElementById("myModal");
+
+    // 닫기 버튼 요소 가져오기
+    var span = document.getElementsByClassName("close")[0];
+
+    // 경고 메시지 함수
+    function showAlert(title, message) {
+        // 제목과 메시지 설정
+        document.getElementById("modalTitle").innerText = title;
+        document.getElementById("modalMessage").innerText = message;
+        // 모달 표시
+        modal.style.display = "block";
+    }
+
+    // 닫기 버튼을 클릭하면 모달 닫기
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // 사용자 지정 경고 메시지 표시
+    showAlert("파일의 내용이 손상되었습니다.", "파일의 내용이 손상되어 읽을 수 없습니다. 사내의 DRM이 적용된 경우 일 수 있습니다 또는 파일의 내용이 비었거나 요구되는 양식에 맞지 않을 수 있습니다.");
+</script>
+{% endif %}
+{% if uplist %}
+    <div class="container my-3">
+        <table class="table">  
+            <thead>
+                <tr class="table-dark">
+                    <th><input type="checkbox" id="checkboxh" name="checkboxh"></th>
+                    <th>번호</th>
+                    <th>파일 이름</th>
+                    <th>작성자</th>
+                    <th>작성 일시</th>
+                    <th>시스템 저장여부</th>
+                    <th>사이저 ID</th>
+                    <th>진행 사항</th>
+                    <th>다운로드</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for upfile in uplist %}
+                <tr>
+                    <td align="Center"><input class="checkbox-item" type="checkbox" id="{{ upfile.id }}" name="checkbox1"></td>
+                    <td align="Center">{{ upfile.id }}</td>
+                    <td><a id="atag" href="{{ upfile.id }}/">{{ upfile.file }}</a></td>
+                    <td align="Center">{{ upfile.create_user }}</td>
+                    <td align="Center">{{ upfile.uploaded_at }}</td>
+                    {% if upfile.data_process == 0 %}
+                        <td  align="Center" class="data-process-2">저장 필요</td>
+                    {% elif upfile.data_process == 1 %}
+                        <td  align="Center" class="data-process-1">저장 완료</td>
+                    {% else %}
+                        <td  align="Center" class="data-process-0">Read 불가</td>
+                    {% endif %}
+                    <td align="Center">{{ upfile.sizer_id }}</td>
+                    <td align="Center">{{ upfile.workstatus }}</td>
+                    <td align="Center"><a id="atag" href="{{ upfile.file }}/"><img src="{% static '/images/upload_excel_icon.png' %}" alt="Download" class="download-icon"></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <ul class="pagination justify-content-center">
+            <!-- 이전페이지 -->
+            {% if uplist.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ uplist.previous_page_number }}">이전</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" tabindex="-1" aria-disabled="true" href="#">이전</a>
+            </li>
+            {% endif %}
+            <!-- 페이지리스트 -->
+            {% for page_number in uplist.paginator.page_range %}
+                {% if page_number >= uplist.number|add:-5 and page_number <= uplist.number|add:5 %}
+                    {% if page_number == uplist.number %}
+                        <li class="page-item" aria-current="page">
+                            <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <!-- 다음페이지 -->
+            {% if uplist.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ uplist.next_page_number }}">다음</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" tabindex="-1" aria-disabled="true" href="#">다음</a>
+            </li>
+            {% endif %}
+        </ul>
+        <div class="d-flex justify-content-end"> <!-- 우측 정렬 -->
+            <button id="delete-selected" class="btn btn-primary">선택 삭제</button>
+        </div>
+        <!-- 페이징처리 끝 -->
+    </div>
+
+{% else %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-100">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="{% static '/images/Hellow.png' %}">
+                    <h1 class="jutanix-text">Welcome JUTANIX !!</h1>
+                    <p class="card-text">[{{ cru_User }}] 님 이곳을 방문하신건 처음이시군요 ! </br></br>상단 메뉴에 파일 업로드를 이용해 처음 사이저를 위한 파일을 생성해보세요 !</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<script>
+    // 전체 선택 체크박스 클릭 이벤트
+    document.getElementById('checkboxh').addEventListener('change', function() {
+        var checkboxes = document.querySelectorAll('input[name^="checkbox"]');
+
+        // 전체 선택 체크박스 상태에 따라 각 체크박스 상태 변경
+        checkboxes.forEach(function(checkbox) {
+            checkbox.checked = this.checked;
+        }.bind(this));
+    });
+
+    document.getElementById('delete-selected').addEventListener('click', function() {
+        var checkboxes = document.querySelectorAll('.checkbox-item:checked');
+        var ids = [];
+        
+        // 선택된 항목들의 ID 수집
+        checkboxes.forEach(function(checkbox) {
+            ids.push(checkbox.id.replace('checkbox', ''));
+        });
+
+        // 서버로 선택된 항목들의 ID를 전송하여 삭제
+        if (ids.length > 0) {
+            var formData = new FormData();
+            formData.append('ids', JSON.stringify(ids)); // 선택된 항목들의 ID를 JSON 형태로 전송
+            
+            // AJAX 요청 보내기
+            fetch('delete_upload_list/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // CSRF 토큰을 포함합니다.
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                location.reload()
+                alert(data.message); // 업로드 결과를 메시지 박스로 표시
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                location.reload()
+                alert('File upload failed.'); // 오류 시 메시지 박스로 표시
+            });
+        }
+    });
+</script>
+{% endblock %}

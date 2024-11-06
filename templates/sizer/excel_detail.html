@@ -1,0 +1,73 @@
+{% extends 'start.html' %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+<style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+  
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+  
+    th {
+      background-color: #f2f2f2;
+    }
+  
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+  
+    .editable {
+      cursor: pointer;
+    }
+  
+    .editable input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      outline: none;
+    }
+  </style>
+{% if uplist %}
+    <div class="container my-3">
+        <table class="table" id="myTable>
+            <thead>
+            <tr class="table-dark">
+                <th>번호</th>
+                <th>파일 이름</th>
+                <th>작성 일시</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for upfile in uplist %}
+                <tr>
+                    <td class="editable" onclick="makeEditable(this)">{{ upfile.id }}</td>
+                    <td class="editable" onclick="makeEditable(this)">{{ upfile.file }}</td>
+                    <td class="editable" onclick="makeEditable(this)">{{ upfile.uploaded_at }}</td>
+                </tr>
+                {% endfor %}
+{% else %}
+                <td>
+                    <td colspan="3"><p>질문이 없습니다.</p></td>
+                </td>
+{% endif %}
+            </tbody>
+
+            <script>
+                function makeEditable(cell) {
+                var value = cell.innerText;
+                cell.innerHTML = '<input type="text" value="' + value + '" onblur="updateValue(this)">';
+                }
+
+                function updateValue(input) {
+                var value = input.value;
+                input.parentNode.innerHTML = value;
+                }
+            </script>
+
+{% endblock %}

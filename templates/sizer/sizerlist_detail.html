@@ -1,0 +1,98 @@
+{% extends 'start.html' %}
+{% block content %}
+{% load static %}
+    <style>
+        .table td {
+            text-align: center;
+        }
+        .table th {
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background-color: #ffffff;
+        }
+        h1 {
+            font-family: Arial, sans-serif; /* 폰트 선택 */
+            font-size: 18px; /* 폰트 크기 선택 */
+            font-weight: bold; /* 폰트 두껍게 선택 */
+            color: #333; /* 폰트 색상 선택 */
+        }
+        h2 {
+            font-family: Arial, sans-serif; /* 폰트 선택 */
+            font-size: 14px; /* 폰트 크기 선택 */
+            font-weight: bold; /* 폰트 두껍게 선택 */
+            color: #333; /* 폰트 색상 선택 */
+        }
+        .custom-background {
+            background-image: url('{% static "/images/upload_excel_icon.png" %}'); /* 배경 이미지 경로 지정 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        /* Jutanix 글씨 스타일 */
+        .jutanix-text {
+            font-family: Arial, sans-serif; /* 원하는 글꼴 지정 */
+            font-size: 36px; /* 글자 크기 지정 */
+            font-weight: bold; /* 글자 굵기 지정 */
+            background: linear-gradient(to right, #c1d62e 20%, #1e51a4 80%); /* 그라데이션 배경 색상 */
+            -webkit-background-clip: text; /* 웹킷 브라우저용 텍스트 그라데이션 */
+            -webkit-text-fill-color: transparent; /* 웹킷 브라우저용 텍스트 색상 투명하게 설정 */
+        }
+    </style>
+    
+    <!-- "Any Sizer" 글씨로 스타일이 입힌 div -->
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h1 class="jutanix-text">Jutanix Any Sizer</h1>
+                        <p class="card-text">파일에 입력된 내용과 가공된 데이터가 다를 수 있습니다. 최소한 테이블의 가장 하단의 Total 수량이 맞는지 확인 후 진행해주시기 바랍니다.</p>
+                        {% if datapro == 0 %}
+                            <form method="post" action="{% url 'sizer:save_html_table' %}"> 
+                                {% csrf_token %}
+                                <input type="hidden" name="html_table" value="{{ html_table|escape }}">
+                                <input type="hidden" name="uniqueid" value="{{ uniqueid|escape }}">
+                                <button type="submit" class="btn btn-primary">데이터 저장</button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'sizer:request_sizer' %}"> 
+                                {% csrf_token %}
+                                <input type="hidden" name="html_table" value="{{ html_table|escape }}">
+                                <input type="hidden" name="uniqueid" value="{{ uniqueid|escape }}">
+                                <button id="responsebtn" type="submit" class="btn btn-primary">데이터 전송</button>
+                                <textarea name="cookies_val" class="form-control mt-3" rows="3" placeholder="사이저에 로그인한 쿠키값을 인력해주세요."></textarea>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if html_table %}
+        <!-- DataFrame을 HTML 표로 출력 -->
+        {{ html_table|safe }}
+    {% elif error %}
+        <p>Error: {{ error }}</p>
+    {% endif %}
+    <script>
+        document.getElementById('responsebtn').addEventListener('click', function() {
+
+            if (confirm("데이터를 전송하시겠습니까?")) {
+                // AJAX 요청 보내기
+                fetch('request_sizer/', {
+                    method: 'POST'
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    location.reload()
+                    alert("Request Fail. 전달받은 쿠키값으로 API 요청 테스트에 실패했습니다."); // 오류 시 메시지 박스로 표시
+                });
+            } else {
+                // 취소를 선택한 경우 아무 작업도 수행하지 않음
+                event.preventDefault()
+            }
+        });
+    </script>
+{% endblock %}

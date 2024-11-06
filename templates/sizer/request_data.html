@@ -1,0 +1,33 @@
+{% extends 'start.html' %}
+{% block content %}
+<!-- templates/progress_bar.html -->
+<div class="progress">
+    <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        0%
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    function updateProgressBar() {
+        // Ajax를 통해 백엔드에서 진행 상황을 가져오기
+        $.ajax({
+            url: "progress_status/",
+            type: "GET",
+            success: function(data) {
+                // 진행 상황 업데이트
+                var progress = data.progress;
+                $('#progress-bar').css('width', progress + '%').attr('aria-valuenow', progress).text(progress + '%');
+                // 작업이 완료되지 않았으면 재귀적으로 업데이트
+                if (progress < 100) {
+                    progressUpdateInterval = setTimeout(updateProgressBar, 500); // 1초마다 업데이트
+                } else {
+                    alert('작업이 완료되었습니다.');
+                }
+            }
+        });
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        updateProgressBar(); // 페이지 로드 시 프로그레스 바 업데이트 시작
+    });
+</script>
+{% endblock %}

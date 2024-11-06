@@ -1,0 +1,183 @@
+{% extends 'start.html' %}
+{% block content %}
+{% load static %}
+<style>
+    /* CSS 스타일링 */
+    .container {
+        max-width: 500px;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    h2 {
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 24px;
+    }
+    .upload-box {
+        border: 2px dashed #cccccc;
+        padding: 40px;
+        cursor: pointer;
+        border-radius: 8px;
+        background-color: #fafafa;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+    .upload-box:hover {
+        background-color: #f1f1f1;
+    }
+    .upload-box.active {
+        border-color: #007bff;
+        background-color: #e6f7ff;
+    }
+    .file-name {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #555;
+    }
+    .button {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .button:hover {
+        background-color: #0056b3;
+    }
+    .hidden-input {
+        display: none;
+    }
+    .icon {
+        width: 48px; /* 원하는 너비로 조정 */
+        height: auto; /* 높이를 너비에 맞게 자동 조정 */
+        margin-right: 10px;
+    }
+    .styled-link {
+        color: #007bff;        /* 파란색 글자 */
+        font-weight: bold;     /* 굵게 */
+        font-size: 12px;       /* 글자 크기 */
+        text-decoration: none; /* 밑줄 제거 */
+        background-color: #e7f3ff; /* 옅은 파란색 배경 */
+        padding: 10px 15px;    /* 내부 여백 */
+        border-radius: 5px;    /* 모서리 둥글게 */
+        display: inline-block; /* 블록처럼 동작하게 설정 */
+        transition: background-color 0.3s ease; /* 배경색 변경 시 애니메이션 효과 */
+        margin-left: auto;     /* 오른쪽 정렬 */
+    }
+
+</style>
+
+<div class="container" valign="Center">
+    <h2>파일 업로드</h2>     
+    <div class="upload-box" id="upload-box">
+        <p>여기에 파일을 드래그 앤 드롭하세요.</p>
+    </div>
+    <span class="file-name" id="file-name">파일을 선택하지 않았습니다.</span>
+    <input type="file" name="file" id="file" class="hidden-input"></br>
+    <button class="button" id="uploadButton">업로드</button>
+    <button class="button" id="init" onclick="location.reload()" >초기화</button>
+    <a class="styled-link" href="{% url 'sizer:sampledown' %}">양식다운</a>
+</div>
+
+<script>
+    // 파일 선택 기능
+    document.querySelector('#upload-box').addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('active');
+    });
+    document.querySelector('#upload-box').addEventListener('dragleave', function() {
+        this.classList.remove('active');
+    });
+    document.querySelector('#upload-box').addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('active');
+        const fileInput = document.querySelector('#file');
+        const fileName = document.querySelector('.file-name');
+        const upload_text = document.querySelector('#upload-box');
+
+        fileInput.files = e.dataTransfer.files;
+        if (fileInput.files.length > 0) {
+            fileName.textContent = fileInput.files[0].name;
+            const filetype = fileInput.files[0].type;
+            if (filetype == 'application/vnd.ms-excel' || filetype == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                const excelIcon = document.createElement('img');
+                excelIcon.src = "{% static '/images/upload_excel_icon.png' %}"; // 엑셀 아이콘 이미지 경로
+                excelIcon.alt = 'Excel Icon';
+                excelIcon.classList.add('icon');
+                upload_text.innerHTML = ''; // 기존 내용 제거
+                upload_text.appendChild(excelIcon); // 엑셀 아이콘 추가
+                upload_text.appendChild(fileName);
+//                upload_text.textContent = fileName.textContent;
+
+            } else {
+                alert("엑셀만 업로드가 가능합니다.");
+            }
+        } else {
+            fileName.textContent = '파일을 선택하지 않았습니다.';
+        }
+    });
+
+    // 파일 이름 표시
+    document.querySelector('#file').addEventListener('change', function() {
+        const fileInput = this;
+        const fileName = document.querySelector('.file-name');
+        if (fileInput.files.length > 0) {
+            fileName.textContent = fileInput.files[0].name;
+        } else {
+            fileName.textContent = '파일을 선택하지 않았습니다.';
+        }
+    });
+
+    // 파일 업로드 버튼 클릭 이벤트 핸들러
+    document.getElementById('uploadButton').addEventListener('click', function() {
+        const fileInput = document.getElementById('file');
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('파일을 선택해 주세요.');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        fetch('upload/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}' // CSRF 토큰을 포함합니다.
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            location.reload()
+            alert(data.message); // 업로드 결과를 메시지 박스로 표시
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            location.reload()
+            alert('File upload failed.'); // 오류 시 메시지 박스로 표시
+        });
+    });
+
+    // 초기화 버튼 클릭 이벤트 핸들러
+    document.getElementById('init').addEventListener('click', function() {
+        const fileInput = document.getElementById('file');
+        const fileName = document.querySelector('.file-name');
+        const uploadBox = document.querySelector('#upload-box');
+        const excelIcon = document.querySelector('.icon'); // 엑셀 아이콘 요소 찾기
+        fileInput.value = '';
+        fileName.textContent = '파일을 선택하지 않았습니다.';
+        document.getElementById('message').innerText = '';
+        uploadBox.innerHTML = '<p>여기에 파일을 드래그 앤 드롭하세요.</p>';
+        uploadBox.removeChild(excelIcon);
+
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "start.html" %}
+{% block content %}
+{% load static %}
+<style>
+    .bottom-left {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 20%;
+        height: 40%;
+        margin: 4%;
+    }
+    .bottom-right {
+        width: 72%;
+        right: 0;
+        height: 100%;
+        position: fixed;
+        background-image:
+            linear-gradient(45deg, #add8e6 25%, transparent 25%),
+            linear-gradient(-45deg, #add8e6 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #add8e6 75%),
+            linear-gradient(-45deg, transparent 75%, #add8e6 75%);
+        background-size: 300px 300px; /* 선 굵기를 조정합니다. */
+    }
+    .no-border {
+        border: none;
+    }
+    .form-control {
+        border: none;
+        border-bottom: 2px solid #ccc; /* 하단 테두리 설정 */
+        border-radius: 0; /* 모서리를 둥글게 하지 않음 */
+        padding: 0.5em 0; /* 상하 패딩 조절 */
+        box-shadow: none; /* 포커스 시 그림자 제거 */
+    }
+    .form-control:focus {
+        border-bottom: 2px solid #007bff; /* 포커스 시 하단 테두리 색 변경 */
+        outline: none; /* 포커스 시 외곽선 제거 */
+        box-shadow: none; /* 포커스 시 그림자 제거 */
+    }
+</style>
+<div>
+    <div class="bottom-left">
+            <h5 class="card-title text-center">Any Sizer</h5>
+            <form method="post" action="{% url 'common:login' %}">
+                {% csrf_token %}
+                {% include "form_errors.html" %}
+                <div class="mb-3">
+                </br>
+                    <input type="text" class="form-control" name="username" id="username" placeholder="Username">
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" name="password" id="password" placeholder="Password">
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                    <a style="color: #007bff; font-weight: bold; font-size: 12px; margin-left: auto;" href="{% url 'common:signup' %}">Create New User</a>
+                </div>
+            </form>
+    </div>
+</div>
+<div class="bottom-right"></div>
+{% endblock %}
+

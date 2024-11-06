@@ -1,0 +1,160 @@
+{% extends 'start.html' %}
+{% block content %}
+{% load static %}
+<style>
+    /* 데이터 가공 전인 경우 빨간색으로 설정 */
+    .data-process-0 {
+        color: red;
+        background-color: lightblue;
+    }
+    /* 데이터 가공 완료인 경우 파란색으로 설정 */
+    .data-process-1 {
+        color: green;
+
+    }
+    /* 데이터 가공 완료인 경우 파란색으로 설정 */
+    .data-process-2 {
+        color: rgb(43, 100, 185);
+
+    }
+    .jutanix-text {
+        font-family: Arial, sans-serif; /* 원하는 글꼴 지정 */
+        font-size: 36px; /* 글자 크기 지정 */
+        font-weight: bold; /* 글자 굵기 지정 */
+        background: linear-gradient(to right, #c1d62e 10%, #1e51a4 90%); /* 그라데이션 배경 색상 */
+        -webkit-background-clip: text; /* 웹킷 브라우저용 텍스트 그라데이션 */
+        -webkit-text-fill-color: transparent; /* 웹킷 브라우저용 텍스트 색상 투명하게 설정 */
+    }
+    .table thead th {
+        text-align: center;
+    }
+    .circle {
+        width: 10px;
+        height: 10px;
+        background-color: green; /* 배경색 설정 */
+        border-radius: 50%; /* 반지름을 50%로 설정하여 동그라미 모양으로 만듦 */
+    }
+</style>
+<div class="container my-3">
+    <button id="delete-selected" class="btn btn-primary">재작업</button></br>
+    <textarea name="cookies_val" class="form-control mt-3" rows="3" placeholder="사이저에 로그인한 쿠키값을 인력해주세요."></textarea>
+    <table class="table table-striped table-hover table-bordered">
+        <thead>
+            <tr class="table-dark">
+                <th><input type="checkbox" id="checkboxh" name="checkboxh"></th>
+                <th>번호</th>
+                <th>사이저 ID</th>
+                <th>Workload Name</th>
+                <th>Cluster Name</th>
+                <th>입력 여부</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for upfile in tasklist %}
+            <tr>
+                <td align="Center">
+                    {% if upfile.api_insert == '저장 성공' %}
+                        <div class="circle"></div>
+                    {% else %}
+                        <input class="checkbox-item" type="checkbox" id="{{ upfile.id }}" name="checkbox1"></td>
+                    {% endif %}
+                <td align="Center">{{ upfile.id }}</td>
+                <td align="Center">{{ upfile.sizerID }}</td>
+                <td align="Center">{{ upfile.workload_name }}</td>
+                <td align="Center">{{ upfile.cluster_name }}</td>
+                {% if upfile.api_insert == '저장 성공' %}
+                    <td align="Center" class="data-process-1">{{ upfile.api_insert }}</td>
+                {% else %}
+                    <td align="Center" class="data-process-0">{{ upfile.api_insert }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <ul class="pagination justify-content-center">
+        <!-- 이전페이지 -->
+        {% if uplist.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ uplist.previous_page_number }}">이전</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">이전</a>
+        </li>
+        {% endif %}
+        <!-- 페이지리스트 -->
+        {% for page_number in uplist.paginator.page_range %}
+            {% if page_number >= uplist.number|add:-5 and page_number <= uplist.number|add:5 %}
+                {% if page_number == uplist.number %}
+                    <li class="page-item" aria-current="page">
+                        <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+                    </li>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        <!-- 다음페이지 -->
+        {% if uplist.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ uplist.next_page_number }}">다음</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">다음</a>
+        </li>
+        {% endif %}
+    </ul>
+    <!-- 페이징처리 끝 -->
+</div>
+
+<script>
+    // 전체 선택 체크박스 클릭 이벤트
+    document.getElementById('checkboxh').addEventListener('change', function() {
+        var checkboxes = document.querySelectorAll('input[name^="checkbox"]');
+
+        // 전체 선택 체크박스 상태에 따라 각 체크박스 상태 변경
+        checkboxes.forEach(function(checkbox) {
+            checkbox.checked = this.checked;
+        }.bind(this));
+    });
+
+    document.getElementById('delete-selected').addEventListener('click', function() {
+        var checkboxes = document.querySelectorAll('.checkbox-item:checked');
+        var ids = [];
+        var cook = document.querySelector('textarea[name="cookies_val"]');
+        var cookval = cook.value;
+        // 선택된 항목들의 ID 수집
+        checkboxes.forEach(function(checkbox) {
+            ids.push(checkbox.id.replace('checkbox', ''));
+        });
+
+        // 서버로 선택된 항목들의 ID를 전송하여 삭제
+        if (ids.length > 0) {
+            var formData = new FormData();
+            formData.append('ids', JSON.stringify(ids)); // 선택된 항목들의 ID를 JSON 형태로 전송
+            formData.append('cook', JSON.stringify(cookval));
+            // AJAX 요청 보내기
+            fetch('retasklist/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // CSRF 토큰을 포함합니다.
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                location.reload()
+                alert(data.message); // 업로드 결과를 메시지 박스로 표시
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                location.reload()
+                alert('Data Insert Fail....'); // 오류 시 메시지 박스로 표시
+            });
+        }
+    });
+</script>
+{% endblock %}
